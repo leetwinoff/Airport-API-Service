@@ -54,23 +54,36 @@ class RouteSerializer(serializers.ModelSerializer):
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
-        representation['source'] = instance.source.name
-        representation['destination'] = instance.destination.name
+        representation["source"] = instance.source.name
+        representation["destination"] = instance.destination.name
         return representation
 
 
 class AirplaneTypeSerializer(serializers.ModelSerializer):
     class Meta:
         model = AirplaneType
-        fields = ("id", "name")
+        fields = ("id", "brand", "model", "default_row", "default_seats_in_row")
 
 
 class AirplaneSerializer(serializers.ModelSerializer):
-    airplane_type = AirplaneTypeSerializer()
+    airplane_type = serializers.PrimaryKeyRelatedField(queryset=AirplaneType.objects.all())
 
     class Meta:
         model = Airplane
         fields = ("id", "name", "row", "seats_in_row", "airplane_type")
+        read_only_fields = ("row", "seats_in_row")
+
+    def create(self, validated_data):
+        airplane_type_instance = validated_data.pop("airplane_type")
+        validated_data["row"] = airplane_type_instance.default_row
+        validated_data["seats_in_row"] = airplane_type_instance.default_seats_in_row
+        airplane = Airplane.objects.create(airplane_type=airplane_type_instance, **validated_data)
+        return airplane
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["airplane_type"] = f"{instance.airplane_type.brand} {instance.airplane_type.model}"
+        return representation
 
 
 class FlightSerializer(serializers.ModelSerializer):
