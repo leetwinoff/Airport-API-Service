@@ -1,5 +1,7 @@
 from django.db import models
 
+from user.models import User
+
 
 class CrewPosition(models.Model):
     position = models.CharField(max_length=255, unique=True)
@@ -65,6 +67,10 @@ class Flight(models.Model):
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
+    order_number = models.CharField(max_length=12)
+
+    def __str__(self):
+        return f"Order No. {self.order_number} created at {self.created_at}"
 
 
 class Ticket(models.Model):
@@ -72,3 +78,7 @@ class Ticket(models.Model):
     seat = models.IntegerField()
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
+
+    def __str__(self):
+        return f"Ticket row: {self.row} seat: {self.seat} order No. {self.order.order_number}"
+
