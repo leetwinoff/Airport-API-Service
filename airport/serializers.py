@@ -57,3 +57,9 @@ class RouteSerializer(serializers.ModelSerializer):
         representation['source'] = instance.source.name
         representation['destination'] = instance.destination.name
         return representation
+
+
+class AirplaneTypeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = AirplaneType
+        fields = ("id", "name")
