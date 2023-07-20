@@ -1,3 +1,5 @@
+from django.utils import timezone
+
 from rest_framework import serializers
 
 from airport.models import (
@@ -87,9 +89,20 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
 
 class FlightSerializer(serializers.ModelSerializer):
-    route = RouteSerializer()
-    airplane = AirplaneSerializer()
+    route = serializers.PrimaryKeyRelatedField(queryset=Route.objects.all())
+    airplane = serializers.PrimaryKeyRelatedField(queryset=Airplane.objects.all())
 
     class Meta:
         model = Flight
         fields = ("id", "route", "airplane", "departure_time", "arrival_time")
+
+    def to_representation(self, instance):
+        representation = super().to_representation(instance)
+        representation["route"] = f"{instance.route.source} - {instance.route.destination}"
+        representation["airplane"] = instance.airplane.name
+
+        departure_time_formatted = timezone.localtime(instance.departure_time).strftime('%d-%m-%Y %H:%M')
+        arrival_time_formatted = timezone.localtime(instance.arrival_time).strftime('%d-%m-%Y %H:%M')
+        representation["departure_time"] = departure_time_formatted
+        representation["arrival_time"] = arrival_time_formatted
+        return representation
