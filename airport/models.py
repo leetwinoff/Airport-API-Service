@@ -60,3 +60,8 @@ class Flight(models.Model):
 
     def __str__(self):
         return f"Departure: {self.departure_time}, Arrival: {self.arrival_time}"
+
+
+class Order(models.Model):
+    created_at = models.DateTimeField(auto_now_add=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
