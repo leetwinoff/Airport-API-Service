@@ -33,3 +33,10 @@ class Route(models.Model):
 
     def __str__(self):
         return f"From {self.source} to {self.destination} {self.distance} miles"
+
+
+class AirplaneType(models.Model):
+    name = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
