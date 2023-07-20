@@ -29,3 +29,9 @@ class CrewSerializer(serializers.ModelSerializer):
         position_id = validated_data.pop("position")
         crew = Crew.objects.create(position=position_id, **validated_data)
         return crew
+
+
+class AirportSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Airport
+        fields = ("id", "name", "code", "closest_big_city")
