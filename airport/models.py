@@ -15,3 +15,12 @@ class Crew(models.Model):
 
     def __str__(self):
         return f"{self.first_name} {self.last_name}"
+
+
+class Airport(models.Model):
+    name = models.CharField(max_length=255, unique=True)
+    code = models.CharField(max_length=3, unique=True)
+    closest_big_city = models.CharField(max_length=255)
+
+    def __str__(self):
+        return self.name
