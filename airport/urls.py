@@ -7,6 +7,7 @@ router.register("crew_position", CrewPositionViewSet)
 router.register("crew", CrewViewSet)
 router.register("", AirportViewSet)
 router.register("route", RouteViewSet)
+router.register("airplane_type", RouteViewSet)
 
 
 urlpatterns = router.urls
