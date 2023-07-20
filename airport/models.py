@@ -40,3 +40,13 @@ class AirplaneType(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Airplane(models.Model):
+    name = models.CharField(max_length=255)
+    row = models.IntegerField()
+    seats_in_row = models.IntegerField()
+    airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+
+    def __str__(self):
+        return self.name
