@@ -34,7 +34,7 @@ class Route(models.Model):
     distance = models.FloatField()
 
     def __str__(self):
-        return f"From {self.source} to {self.destination} {self.distance} miles"
+        return f"From {self.source} to {self.destination}. Distance: {self.distance} mi."
 
 
 class AirplaneType(models.Model):
