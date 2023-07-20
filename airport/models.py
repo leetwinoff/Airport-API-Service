@@ -50,3 +50,13 @@ class Airplane(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Flight(models.Model):
+    route = models.ForeignKey(Route, on_delete=models.CASCADE, related_name="flight")
+    airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
+    departure_time = models.DateTimeField(null=False, blank=False)
+    arrival_time = models.DateTimeField(null=False, blank=False)
+
+    def __str__(self):
+        return f"Departure: {self.departure_time}, Arrival: {self.arrival_time}"
