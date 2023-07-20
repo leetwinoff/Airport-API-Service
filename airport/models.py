@@ -24,3 +24,12 @@ class Airport(models.Model):
 
     def __str__(self):
         return self.name
+
+
+class Route(models.Model):
+    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_routes")
+    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
+    distance = models.FloatField()
+
+    def __str__(self):
+        return f"From {self.source} to {self.destination} {self.distance} miles"
