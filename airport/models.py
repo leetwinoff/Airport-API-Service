@@ -38,10 +38,13 @@ class Route(models.Model):
 
 
 class AirplaneType(models.Model):
-    name = models.CharField(max_length=255)
+    brand = models.CharField(max_length=55)
+    model = models.CharField(max_length=55)
+    default_row = models.PositiveIntegerField(default=0)
+    default_seats_in_row = models.PositiveIntegerField(default=0)
 
     def __str__(self):
-        return self.name
+        return f"{self.brand} {self.model}"
 
 
 class Airplane(models.Model):
