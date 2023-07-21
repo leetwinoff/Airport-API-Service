@@ -1,10 +1,10 @@
 from django.shortcuts import render
 from rest_framework import viewsets
-
+from rest_framework.generics import get_object_or_404
 
 from airport.models import CrewPosition, Crew, Airport, Route, AirplaneType, Airplane, Flight
 from airport.serializers import CrewPositionSerializer, CrewSerializer, AirportSerializer, RouteSerializer, \
-    AirplaneTypeSerializer, AirplaneSerializer, FlightSerializer
+    AirplaneTypeSerializer, AirplaneSerializer, FlightSerializer, FlightDetailSerializer
 
 
 class CrewPositionViewSet(viewsets.ModelViewSet):
@@ -38,5 +38,16 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
 
 class FlightViewSet(viewsets.ModelViewSet):
-    queryset = Flight.objects.all()
-    serializer_class = FlightSerializer
+    queryset = Flight.objects.prefetch_related('airplane__airplane_type').all()
+
+    def get_serializer_class(self):
+        if self.action == "list":
+            return FlightSerializer
+        elif self.action == "retrieve":
+            return FlightDetailSerializer
+        return FlightSerializer
+
+    def get_object(self):
+        queryset = self.filter_queryset(self.get_queryset())
+        obj = get_object_or_404(queryset, pk=self.kwargs['pk'])
+        return obj
