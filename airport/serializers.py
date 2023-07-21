@@ -72,8 +72,8 @@ class AirplaneSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Airplane
-        fields = ("id", "name", "row", "seats_in_row", "airplane_type")
-        read_only_fields = ("row", "seats_in_row")
+        fields = ("id", "name", "row", "seats_in_row", "airplane_type", "capacity")
+        read_only_fields = ("row", "seats_in_row", "capacity")
 
     def create(self, validated_data):
         airplane_type_instance = validated_data.pop("airplane_type")
@@ -94,7 +94,7 @@ class FlightSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Flight
-        fields = ("id", "route", "airplane", "departure_time", "arrival_time")
+        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "available_tickets")
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
@@ -106,3 +106,14 @@ class FlightSerializer(serializers.ModelSerializer):
         representation["departure_time"] = departure_time_formatted
         representation["arrival_time"] = arrival_time_formatted
         return representation
+
+
+class FlightDetailSerializer(serializers.ModelSerializer):
+    route = RouteSerializer()
+    airplane = AirplaneSerializer()
+
+    class Meta:
+        model = Flight
+        fields = ("id", "route", "airplane", "departure_time", "arrival_time", "available_tickets")
+
+
