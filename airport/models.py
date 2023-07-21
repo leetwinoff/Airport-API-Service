@@ -53,6 +53,10 @@ class Airplane(models.Model):
     seats_in_row = models.IntegerField()
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
 
+    @property
+    def capacity(self):
+        return self.row * self.seats_in_row
+
     def __str__(self):
         return self.name
 
@@ -62,6 +66,12 @@ class Flight(models.Model):
     airplane = models.ForeignKey(Airplane, on_delete=models.CASCADE)
     departure_time = models.DateTimeField(null=False, blank=False)
     arrival_time = models.DateTimeField(null=False, blank=False)
+
+    @property
+    def available_tickets(self):
+        booked_tickets_count = self.tickets.count()
+        return self.airplane.capacity - booked_tickets_count
+
 
     def __str__(self):
         return f"Departure: {self.departure_time}, Arrival: {self.arrival_time}"
@@ -79,7 +89,7 @@ class Order(models.Model):
 class Ticket(models.Model):
     row = models.IntegerField()
     seat = models.IntegerField()
-    flight = models.ForeignKey(Flight, on_delete=models.CASCADE)
+    flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
     order = models.ForeignKey(Order, on_delete=models.CASCADE)
 
     def __str__(self):
