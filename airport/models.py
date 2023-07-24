@@ -1,4 +1,9 @@
+import random
+import string
+
 from django.db import models
+from django.utils import timezone
+from rest_framework.exceptions import ValidationError
 
 from user.models import User
 
@@ -74,13 +79,29 @@ class Flight(models.Model):
 
 
     def __str__(self):
-        return f"Departure: {self.departure_time}, Arrival: {self.arrival_time}"
+        departure_time_formatted = timezone.localtime(self.departure_time).strftime('%d-%m-%Y at %H:%M')
+        arrival_time_formatted = timezone.localtime(self.arrival_time).strftime('%d-%m-%Y at %H:%M')
+        return f"Departure from {self.route.source} on {departure_time_formatted}" \
+               f" - Arrival to {self.route.destination} on {arrival_time_formatted}"
 
 
 class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
-    order_number = models.CharField(max_length=12)
+    order_number = models.CharField(max_length=8, unique=True, null=False)
+
+    def generate_order_number(self):
+        letters = string.ascii_uppercase
+        digits = string.digits[0:10]
+        random_letters = "".join(random.choices(letters, k=3))
+        random_digits = "".join(random.choices(digits, k=5))
+        return f"{random_letters}{random_digits}"
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            # Generate a unique order number for new instances
+            self.order_number = self.generate_order_number()
+        super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Order No. {self.order_number} created at {self.created_at}"
@@ -90,7 +111,46 @@ class Ticket(models.Model):
     row = models.IntegerField()
     seat = models.IntegerField()
     flight = models.ForeignKey(Flight, on_delete=models.CASCADE, related_name="tickets")
-    order = models.ForeignKey(Order, on_delete=models.CASCADE)
+    order = models.ForeignKey(Order, on_delete=models.CASCADE, related_name="tickets")
+
+    @staticmethod
+    def validate_ticket(row, seat, flight, error_to_raise):
+        airplane = flight.airplane
+        if not (1 <= row <= airplane.row):
+            raise error_to_raise(
+                {
+                    "row": f"Row number must be in available range (1, {airplane.row}): (1, {airplane.row})"
+                }
+            )
+        if not (1 <= seat <= airplane.seats_in_row):
+            raise error_to_raise(
+                {
+                    "seat": f"Seat number must be in available range (1, {airplane.seats_in_row}): "
+                            f"(1, {airplane.seats_in_row})"
+                }
+            )
+
+    def clean(self):
+        Ticket.validate_ticket(
+            self.row,
+            self.seat,
+            self.flight,
+            ValidationError,
+        )
+
+    def save(
+        self,
+        force_insert=False,
+        force_update=False,
+        using=None,
+        update_fields=None,
+    ):
+        self.full_clean()
+        return super(Ticket, self).save(
+            force_insert, force_update, using, update_fields
+        )
+
+
 
     def __str__(self):
         return f"Ticket row: {self.row} seat: {self.seat} order No. {self.order.order_number}"
