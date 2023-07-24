@@ -1,10 +1,14 @@
-from django.shortcuts import render
-from rest_framework import viewsets
-from rest_framework.generics import get_object_or_404
 
-from airport.models import CrewPosition, Crew, Airport, Route, AirplaneType, Airplane, Flight
+from django.shortcuts import render
+from rest_framework import viewsets, mixins
+
+from rest_framework.generics import get_object_or_404
+from rest_framework.viewsets import GenericViewSet
+
+from airport.models import CrewPosition, Crew, Airport, Route, AirplaneType, Airplane, Flight, Ticket, Order
 from airport.serializers import CrewPositionSerializer, CrewSerializer, AirportSerializer, RouteSerializer, \
-    AirplaneTypeSerializer, AirplaneSerializer, FlightSerializer, FlightDetailSerializer
+    AirplaneTypeSerializer, AirplaneSerializer, FlightSerializer, FlightDetailSerializer, TicketSerializer, \
+    OrderSerializer
 
 
 class CrewPositionViewSet(viewsets.ModelViewSet):
@@ -51,3 +55,22 @@ class FlightViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset, pk=self.kwargs['pk'])
         return obj
+
+
+class TicketViewSet(viewsets.ModelViewSet):
+    queryset = Ticket.objects.all()
+    serializer_class = TicketSerializer
+
+
+class OrderViewSet(mixins.ListModelMixin, mixins.CreateModelMixin, GenericViewSet):
+    queryset = Order.objects.prefetch_related("ticket_set__flight")
+    serializer_class = OrderSerializer
+
+    # def get_queryset(self):
+    #     return Order.objects.filter(user=self.request.user)
+
+    def perform_create(self, serializer):
+        serializer.save(user=self.request.user)
+
+
+
