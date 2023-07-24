@@ -71,22 +71,32 @@ class AirplaneTypeSerializer(serializers.ModelSerializer):
 
 class AirplaneSerializer(serializers.ModelSerializer):
     airplane_type = serializers.PrimaryKeyRelatedField(queryset=AirplaneType.objects.all())
+    crew = serializers.PrimaryKeyRelatedField(queryset=Crew.objects.all(), many=True, required=False)
 
     class Meta:
         model = Airplane
-        fields = ("id", "name", "row", "seats_in_row", "airplane_type", "capacity")
+        fields = ("id", "name", "row", "seats_in_row", "airplane_type", "capacity", "crew")
         read_only_fields = ("row", "seats_in_row", "capacity")
 
     def create(self, validated_data):
+        crew_data = validated_data.pop("crew", None)
         airplane_type_instance = validated_data.pop("airplane_type")
+        if crew_data:
+            crew_instance = Crew.objects.filter(pk__in=[crew.id for crew in crew_data])
+        else:
+            crew_instance = []
         validated_data["row"] = airplane_type_instance.default_row
         validated_data["seats_in_row"] = airplane_type_instance.default_seats_in_row
+
         airplane = Airplane.objects.create(airplane_type=airplane_type_instance, **validated_data)
+        airplane.crew.set(crew_instance)
         return airplane
 
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["airplane_type"] = f"{instance.airplane_type.brand} {instance.airplane_type.model}"
+        crew_representation = [f"{crew.position}: {crew.first_name} {crew.last_name}" for crew in instance.crew.all()]
+        representation["crew"] = crew_representation
         return representation
 
 
@@ -158,11 +168,11 @@ class TicketSerializer(serializers.ModelSerializer):
 
 
 class OrderSerializer(serializers.ModelSerializer):
-    tickets = serializers.PrimaryKeyRelatedField(queryset=Ticket.objects.all())
+    tickets = TicketSerializer(many=True)
 
     class Meta:
         model = Order
-        fields = ("created_at", "user", "order_number", "tickets")
+        fields = ("id", "created_at", "user", "order_number", "tickets")
         read_only_fields = ("order_number", "user")
 
 
