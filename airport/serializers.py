@@ -1,6 +1,8 @@
+from django.db import transaction
 from django.utils import timezone
 
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from airport.models import (
     CrewPosition,
@@ -117,3 +119,57 @@ class FlightDetailSerializer(serializers.ModelSerializer):
         fields = ("id", "route", "airplane", "departure_time", "arrival_time", "available_tickets")
 
 
+class TicketSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Ticket
+        fields = ("id", "row", "seat", "flight", "order")
+        read_only_fields = ("order", )
+
+    def validate(self, data):
+        flight = data["flight"]
+        row = data["row"]
+        seat = data["seat"]
+
+        existing_ticket = Ticket.objects.filter(flight=flight, row=row, seat=seat).first()
+        if existing_ticket:
+            raise ValidationError("A ticket with the same row and seat on this flight already exists.")
+
+        return data
+
+
+
+
+    def create(self, validated_data):
+        flight = validated_data["flight"]
+        row = validated_data["row"]
+        seat = validated_data["seat"]
+
+        order = Order.objects.create(user=self.context["request"].user)
+
+        ticket = Ticket.objects.create(
+            flight=flight,
+            row=row,
+            seat=seat,
+            order=order
+        )
+
+        return ticket
+
+
+class OrderSerializer(serializers.ModelSerializer):
+    tickets = serializers.PrimaryKeyRelatedField(queryset=Ticket.objects.all())
+
+    class Meta:
+        model = Order
+        fields = ("created_at", "user", "order_number", "tickets")
+        read_only_fields = ("order_number", "user")
+
+
+    def create(self, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets")
+            order = Order.objects.create(**validated_data)
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=order, **ticket_data)
+            return order
