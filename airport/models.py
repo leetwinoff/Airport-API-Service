@@ -57,10 +57,12 @@ class Airplane(models.Model):
     row = models.IntegerField()
     seats_in_row = models.IntegerField()
     airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+    crew = models.ManyToManyField(Crew, related_name="airplanes", blank=True)
 
     @property
     def capacity(self):
         return self.row * self.seats_in_row
+
 
     def __str__(self):
         return self.name
@@ -89,6 +91,11 @@ class Order(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     user = models.ForeignKey(User, on_delete=models.CASCADE)
     order_number = models.CharField(max_length=8, unique=True, null=False)
+
+    class Meta:
+        ordering = ["-created_at"]
+        db_table = "order"
+
 
     def generate_order_number(self):
         letters = string.ascii_uppercase
