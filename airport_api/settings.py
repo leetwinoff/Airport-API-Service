@@ -12,6 +12,7 @@ https://docs.djangoproject.com/en/4.2/ref/settings/
 import os
 from datetime import timedelta
 
+import certifi as certifi
 from dotenv import load_dotenv
 from pathlib import Path
 
@@ -128,6 +129,7 @@ USE_TZ = True
 
 STATIC_URL = "static/"
 
+
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
@@ -155,8 +157,8 @@ SIMPLE_JWT = {
 }
 
 SPECTACULAR_SETTINGS = {
-    "TITLE": "DRF library API",
-    "DESCRIPTION": "Library where you can borrow books",
+    "TITLE": "Airport API service",
+    "DESCRIPTION": "Airport tracker service",
     "VERSION": "1.0.0",
     "SERVE_INCLUDE_SCHEMA": False,
     "SWAGGER_UI_SETTINGS": {
@@ -166,3 +168,4 @@ SPECTACULAR_SETTINGS = {
         "defaultModelExpandDepth": 2,
     },
 }
+
