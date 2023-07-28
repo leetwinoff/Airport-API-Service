@@ -2,7 +2,6 @@ from django.db import transaction
 from django.utils import timezone
 
 from rest_framework import serializers
-from rest_framework.exceptions import ValidationError
 
 from airport.models import (
     CrewPosition,
@@ -130,11 +129,9 @@ class FlightDetailSerializer(serializers.ModelSerializer):
 
 
 class TicketSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ticket
-        fields = ("id", "row", "seat", "flight", "order")
-        read_only_fields = ("order", )
+        fields = ("id", "row", "seat", "flight")
 
     def validate(self, data):
         flight = data["flight"]
@@ -143,28 +140,10 @@ class TicketSerializer(serializers.ModelSerializer):
 
         existing_ticket = Ticket.objects.filter(flight=flight, row=row, seat=seat).first()
         if existing_ticket:
-            raise ValidationError("A ticket with the same row and seat on this flight already exists.")
+            raise serializers.ValidationError("A ticket with the same row and seat on this flight already exists.")
 
         return data
 
-
-
-
-    def create(self, validated_data):
-        flight = validated_data["flight"]
-        row = validated_data["row"]
-        seat = validated_data["seat"]
-
-        order = Order.objects.create(user=self.context["request"].user)
-
-        ticket = Ticket.objects.create(
-            flight=flight,
-            row=row,
-            seat=seat,
-            order=order
-        )
-
-        return ticket
 
 
 class OrderSerializer(serializers.ModelSerializer):
@@ -183,3 +162,13 @@ class OrderSerializer(serializers.ModelSerializer):
             for ticket_data in tickets_data:
                 Ticket.objects.create(order=order, **ticket_data)
             return order
+
+    def update(self, instance, validated_data):
+        with transaction.atomic():
+            tickets_data = validated_data.pop("tickets", [])
+            instance = super().update(instance, validated_data)
+
+            for ticket_data in tickets_data:
+                Ticket.objects.create(order=instance, **ticket_data)
+
+            return instance
