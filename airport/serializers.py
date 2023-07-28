@@ -19,7 +19,7 @@ from airport.models import (
 class CrewPositionSerializer(serializers.ModelSerializer):
     class Meta:
         model = CrewPosition
-        fields = ("position",)
+        fields = ("id", "position",)
 
 
 class CrewSerializer(serializers.ModelSerializer):
@@ -59,6 +59,7 @@ class RouteSerializer(serializers.ModelSerializer):
         representation = super().to_representation(instance)
         representation["source"] = instance.source.name
         representation["destination"] = instance.destination.name
+        representation["distance"] = f"{instance.distance} miles."
         return representation
 
 
@@ -110,7 +111,7 @@ class FlightSerializer(serializers.ModelSerializer):
     def to_representation(self, instance):
         representation = super().to_representation(instance)
         representation["route"] = f"{instance.route.source} - {instance.route.destination}"
-        representation["airplane"] = instance.airplane.name
+        representation["airplane"] = f"{instance.airplane.airplane_type.brand} {instance.airplane.airplane_type.model}"
 
         departure_time_formatted = timezone.localtime(instance.departure_time).strftime('%d-%m-%Y %H:%M')
         arrival_time_formatted = timezone.localtime(instance.arrival_time).strftime('%d-%m-%Y %H:%M')
@@ -144,6 +145,11 @@ class TicketSerializer(serializers.ModelSerializer):
 
         return data
 
+    def create(self, validated_data):
+        user = self.context["request"].user
+
+        validated_data["order"] = Order.objects.create(user=user)
+        return super().create(validated_data)
 
 
 class OrderSerializer(serializers.ModelSerializer):
