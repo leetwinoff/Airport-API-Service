@@ -98,6 +98,8 @@ class Order(models.Model):
 
 
     def generate_order_number(self):
+        """Generates random order number from 3 letters upper case and 5 digits"""
+
         letters = string.ascii_uppercase
         digits = string.digits[0:10]
         random_letters = "".join(random.choices(letters, k=3))
@@ -106,7 +108,6 @@ class Order(models.Model):
 
     def save(self, *args, **kwargs):
         if not self.pk:
-            # Generate a unique order number for new instances
             self.order_number = self.generate_order_number()
         super().save(*args, **kwargs)
 
@@ -126,14 +127,13 @@ class Ticket(models.Model):
         if not (1 <= row <= airplane.row):
             raise error_to_raise(
                 {
-                    "row": f"Row number must be in available range (1, {airplane.row}): (1, {airplane.row})"
+                    "row": f"Row number must be in available range (1, {airplane.row}))"
                 }
             )
         if not (1 <= seat <= airplane.seats_in_row):
             raise error_to_raise(
                 {
-                    "seat": f"Seat number must be in available range (1, {airplane.seats_in_row}): "
-                            f"(1, {airplane.seats_in_row})"
+                    "seat": f"Seat number must be in available range (1, {airplane.seats_in_row})"
                 }
             )
 
@@ -158,7 +158,10 @@ class Ticket(models.Model):
         )
 
 
-
     def __str__(self):
         return f"Ticket row: {self.row} seat: {self.seat} order No. {self.order.order_number}"
+
+    class Meta:
+        unique_together = ("flight", "row", "seat")
+        ordering = ["row", "seat"]
 
