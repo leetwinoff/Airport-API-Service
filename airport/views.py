@@ -71,7 +71,11 @@ class TicketViewSet(viewsets.ModelViewSet):
         return Ticket.objects.filter(order__user=user)
 
     def perform_create(self, serializer):
-        serializer.save(order__user=self.request.user)
+        user = self.request.user
+
+        ticket = serializer.save()
+        ticket.order.user = user
+        ticket.order.save()
 
 
 class OrderViewSet(viewsets.ModelViewSet):
