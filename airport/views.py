@@ -20,6 +20,15 @@ class CrewViewSet(viewsets.ModelViewSet):
     serializer_class = CrewSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        position = self.request.query_params.get("position")
+        if position:
+            queryset = queryset.filter(position__position__icontains=position)
+
+        return queryset
+
 
 class AirportViewSet(viewsets.ModelViewSet):
     queryset = Airport.objects.all()
