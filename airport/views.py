@@ -38,6 +38,17 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
     serializer_class = AirplaneTypeSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_queryset(self):
+        brand = self.request.query_params.get("brand")
+
+        queryset = self.queryset
+
+        if brand:
+            queryset = queryset.filter(brand__icontains=brand)
+
+        return queryset.distinct()
+
+
 
 class AirplaneViewSet(viewsets.ModelViewSet):
     queryset = Airplane.objects.all()
@@ -48,6 +59,7 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 class FlightViewSet(viewsets.ModelViewSet):
     queryset = Flight.objects.select_related('airplane__airplane_type').all()
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
+
 
     def get_serializer_class(self):
         if self.action == "list":
