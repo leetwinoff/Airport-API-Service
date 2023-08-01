@@ -89,6 +89,56 @@ class RouteViewSet(viewsets.ModelViewSet):
     serializer_class = RouteSerializer
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        source = self.request.query_params.get("source")
+        destination = self.request.query_params.get("destination")
+        distance = self.request.query_params.get("distance")
+
+        if source:
+            queryset = queryset.filter(source__name__icontains=source)
+        if destination:
+            queryset = queryset.filter(destination__name__icontains=destination)
+        if distance:
+            try:
+                distance = float(distance)
+                queryset = queryset.filter(distance__gte=distance)
+            except ValueError:
+                pass
+
+        return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "source",
+                type=OpenApiTypes.STR,
+                description="Filter by source airport(ex. ?source=Boryspil)",
+            ),
+            OpenApiParameter(
+                "destination",
+                type=OpenApiTypes.STR,
+                description=(
+                        "Filter by destination airport"
+                        "(ex. ?destination=Joahn)"
+                ),
+            ),
+            OpenApiParameter(
+                "distance",
+                type=OpenApiTypes.INT,
+                description=(
+                        "Filter by route distance"
+                        "(ex. ?distance=100)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
+
+
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
     queryset = AirplaneType.objects.all()
