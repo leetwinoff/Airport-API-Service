@@ -1,3 +1,5 @@
+from drf_spectacular.types import OpenApiTypes
+from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
 
 from rest_framework.generics import get_object_or_404
@@ -50,6 +52,34 @@ class AirportViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(closest_big_city__icontains=closest_big_city)
 
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "name",
+                type=OpenApiTypes.STR,
+                description="Filter by airport name (ex. ?name=Boryspil)",
+            ),
+            OpenApiParameter(
+                "code",
+                type=OpenApiTypes.STR,
+                description=(
+                        "Filter by airport code "
+                        "(ex. ?code=KBP)"
+                ),
+            ),
+            OpenApiParameter(
+                "closest_big_city",
+                type=OpenApiTypes.STR,
+                description=(
+                        "Filter by closest big city"
+                        "(ex. ?closest_big_city=Kyiv)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
 
 
 
