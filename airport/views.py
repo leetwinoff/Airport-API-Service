@@ -1,3 +1,4 @@
+from datetime import datetime, timedelta
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
@@ -179,6 +180,24 @@ class FlightViewSet(viewsets.ModelViewSet):
         queryset = self.filter_queryset(self.get_queryset())
         obj = get_object_or_404(queryset, pk=self.kwargs['pk'])
         return obj
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+
+        departure_time = self.request.query_params.get("departure_time")
+        arrival_time = self.request.query_params.get("arrival_time")
+
+        if departure_time:
+            start_date = datetime.strptime(departure_time, "%Y-%m-%d").date()
+            end_date = start_date + timedelta(days=1)
+            queryset = queryset.filter(departure_time__date__gte=start_date, departure_time__date__lt=end_date)
+
+        if arrival_time:
+            start_date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
+            end_date = start_date + timedelta(days=1)
+            queryset = queryset.filter(arrival_time__date__gte=start_date, arrival_time__date__lt=end_date)
+
+        return queryset
 
 
 class TicketViewSet(viewsets.ModelViewSet):
