@@ -157,7 +157,6 @@ class AirplaneTypeViewSet(viewsets.ModelViewSet):
         return queryset.distinct()
 
 
-
 class AirplaneViewSet(viewsets.ModelViewSet):
     queryset = Airplane.objects.all()
     serializer_class = AirplaneSerializer
@@ -193,11 +192,31 @@ class FlightViewSet(viewsets.ModelViewSet):
             queryset = queryset.filter(departure_time__date__gte=start_date, departure_time__date__lt=end_date)
 
         if arrival_time:
-            start_date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
-            end_date = start_date + timedelta(days=1)
-            queryset = queryset.filter(arrival_time__date__gte=start_date, arrival_time__date__lt=end_date)
+            date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
+            queryset = queryset.filter(arrival_time__date__gte=date)
 
         return queryset
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                "departure_time",
+                type=OpenApiTypes.DATE,
+                description="Filter by departure date(ex. ?departure_date=2023-08-01)",
+            ),
+            OpenApiParameter(
+                "arrival_date",
+                type=OpenApiTypes.DATE,
+                description=(
+                        "Filter by arrival date"
+                        "(ex. ?arrival_date=2023-08-02)"
+                ),
+            ),
+        ]
+    )
+    def list(self, request, *args, **kwargs):
+        return super().list(request, *args, **kwargs)
+
 
 
 class TicketViewSet(viewsets.ModelViewSet):
