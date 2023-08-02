@@ -1,4 +1,6 @@
 from datetime import datetime, timedelta
+
+from django.db.models import F, Count
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import extend_schema, OpenApiParameter
 from rest_framework import viewsets
@@ -164,7 +166,11 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
 
 class FlightViewSet(viewsets.ModelViewSet):
-    queryset = Flight.objects.select_related('airplane__airplane_type').all()
+    queryset = Flight.objects.all().select_related("airplane", "route").annotate(
+        tickets_available=(
+            F("airplane__row") * F("airplane__seats_in_row") - Count("tickets")
+        )
+    )
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
 
 
@@ -185,6 +191,10 @@ class FlightViewSet(viewsets.ModelViewSet):
 
         departure_time = self.request.query_params.get("departure_time")
         arrival_time = self.request.query_params.get("arrival_time")
+        available_tickets = self.request.query_params.get("available_tickets")
+
+        if available_tickets:
+            queryset = queryset.filter(tickets_available__gte=available_tickets)
 
         if departure_time:
             start_date = datetime.strptime(departure_time, "%Y-%m-%d").date()
@@ -202,21 +212,22 @@ class FlightViewSet(viewsets.ModelViewSet):
             OpenApiParameter(
                 "departure_time",
                 type=OpenApiTypes.DATE,
-                description="Filter by departure date(ex. ?departure_date=2023-08-01)",
+                description="Filter by departure date (ex. ?departure_time=2023-08-01)",
             ),
             OpenApiParameter(
-                "arrival_date",
+                "arrival_time",
                 type=OpenApiTypes.DATE,
-                description=(
-                        "Filter by arrival date"
-                        "(ex. ?arrival_date=2023-08-02)"
-                ),
+                description="Filter by arrival date (ex. ?arrival_time=2023-08-02)",
+            ),
+            OpenApiParameter(
+                "available_tickets",
+                type=OpenApiTypes.INT,
+                description="Filter by available tickets is greater or equal (ex. ?available_tickets=10)",
             ),
         ]
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
 
 
 class TicketViewSet(viewsets.ModelViewSet):
