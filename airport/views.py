@@ -8,11 +8,30 @@ from rest_framework import viewsets
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
 
-from airport.models import CrewPosition, Crew, Airport, Route, AirplaneType, Airplane, Flight, Ticket, Order
+from airport.models import (
+    CrewPosition,
+    Crew,
+    Airport,
+    Route,
+    AirplaneType,
+    Airplane,
+    Flight,
+    Ticket,
+    Order,
+)
 from airport.permissions import IsAdminOrIfAuthenticatedReadOnly
-from airport.serializers import CrewPositionSerializer, CrewSerializer, AirportSerializer, RouteSerializer, \
-    AirplaneTypeSerializer, AirplaneSerializer, FlightSerializer, FlightDetailSerializer, TicketSerializer, \
-    OrderSerializer
+from airport.serializers import (
+    CrewPositionSerializer,
+    CrewSerializer,
+    AirportSerializer,
+    RouteSerializer,
+    AirplaneTypeSerializer,
+    AirplaneSerializer,
+    FlightSerializer,
+    FlightDetailSerializer,
+    TicketSerializer,
+    OrderSerializer,
+)
 
 
 class CrewPositionViewSet(viewsets.ModelViewSet):
@@ -67,25 +86,19 @@ class AirportViewSet(viewsets.ModelViewSet):
             OpenApiParameter(
                 "code",
                 type=OpenApiTypes.STR,
-                description=(
-                        "Filter by airport code "
-                        "(ex. ?code=KBP)"
-                ),
+                description=("Filter by airport code " "(ex. ?code=KBP)"),
             ),
             OpenApiParameter(
                 "closest_big_city",
                 type=OpenApiTypes.STR,
                 description=(
-                        "Filter by closest big city"
-                        "(ex. ?closest_big_city=Kyiv)"
+                    "Filter by closest big city" "(ex. ?closest_big_city=Kyiv)"
                 ),
             ),
         ]
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
-
 
 
 class RouteViewSet(viewsets.ModelViewSet):
@@ -124,24 +137,18 @@ class RouteViewSet(viewsets.ModelViewSet):
                 "destination",
                 type=OpenApiTypes.STR,
                 description=(
-                        "Filter by destination airport"
-                        "(ex. ?destination=Joahn)"
+                    "Filter by destination airport" "(ex. ?destination=Joahn)"
                 ),
             ),
             OpenApiParameter(
                 "distance",
                 type=OpenApiTypes.INT,
-                description=(
-                        "Filter by route distance"
-                        "(ex. ?distance=100)"
-                ),
+                description=("Filter by route distance" "(ex. ?distance=100)"),
             ),
         ]
     )
     def list(self, request, *args, **kwargs):
         return super().list(request, *args, **kwargs)
-
-
 
 
 class AirplaneTypeViewSet(viewsets.ModelViewSet):
@@ -167,13 +174,16 @@ class AirplaneViewSet(viewsets.ModelViewSet):
 
 
 class FlightViewSet(viewsets.ModelViewSet):
-    queryset = Flight.objects.all().select_related("airplane", "route").annotate(
-        tickets_available=(
-            F("airplane__row") * F("airplane__seats_in_row") - Count("tickets")
+    queryset = (
+        Flight.objects.all()
+        .select_related("airplane", "route")
+        .annotate(
+            tickets_available=(
+                F("airplane__row") * F("airplane__seats_in_row") - Count("tickets")
+            )
         )
     )
     permission_classes = (IsAdminOrIfAuthenticatedReadOnly,)
-
 
     def get_serializer_class(self):
         if self.action == "list":
@@ -184,7 +194,7 @@ class FlightViewSet(viewsets.ModelViewSet):
 
     def get_object(self):
         queryset = self.filter_queryset(self.get_queryset())
-        obj = get_object_or_404(queryset, pk=self.kwargs['pk'])
+        obj = get_object_or_404(queryset, pk=self.kwargs["pk"])
         return obj
 
     def get_queryset(self):
@@ -200,7 +210,9 @@ class FlightViewSet(viewsets.ModelViewSet):
         if departure_time:
             start_date = datetime.strptime(departure_time, "%Y-%m-%d").date()
             end_date = start_date + timedelta(days=1)
-            queryset = queryset.filter(departure_time__date__gte=start_date, departure_time__date__lt=end_date)
+            queryset = queryset.filter(
+                departure_time__date__gte=start_date, departure_time__date__lt=end_date
+            )
 
         if arrival_time:
             date = datetime.strptime(arrival_time, "%Y-%m-%d").date()
@@ -234,7 +246,7 @@ class FlightViewSet(viewsets.ModelViewSet):
 class TicketViewSet(viewsets.ModelViewSet):
     queryset = Ticket.objects.all()
     serializer_class = TicketSerializer
-    permission_classes = (IsAuthenticated, )
+    permission_classes = (IsAuthenticated,)
 
     def get_queryset(self):
         user = self.request.user

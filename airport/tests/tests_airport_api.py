@@ -7,9 +7,26 @@ from rest_framework import status
 from django.contrib.auth import get_user_model
 from rest_framework.test import APIClient
 
-from airport.models import CrewPosition, Crew, Airport, Route, AirplaneType, Airplane, Flight, Order, Ticket
-from airport.serializers import CrewPositionSerializer, CrewSerializer, AirportSerializer, RouteSerializer, \
-    AirplaneTypeSerializer, AirplaneSerializer, FlightSerializer
+from airport.models import (
+    CrewPosition,
+    Crew,
+    Airport,
+    Route,
+    AirplaneType,
+    Airplane,
+    Flight,
+    Order,
+    Ticket,
+)
+from airport.serializers import (
+    CrewPositionSerializer,
+    CrewSerializer,
+    AirportSerializer,
+    RouteSerializer,
+    AirplaneTypeSerializer,
+    AirplaneSerializer,
+    FlightSerializer,
+)
 
 CREW_POSITION_URL = reverse("airport:crewposition-list")
 CREW_URL = reverse("airport:crew-list")
@@ -43,7 +60,7 @@ def sample_crew(**params):
     defaults = {
         "first_name": "Joe",
         "last_name": "Doe",
-        "position": sample_crew_position()
+        "position": sample_crew_position(),
     }
     defaults.update(params)
     return Crew.objects.create(**defaults)
@@ -53,7 +70,7 @@ def sample_airport(**params):
     defaults = {
         "name": "TestAirportName",
         "code": "AAA",
-        "closest_big_city": "TestCityName"
+        "closest_big_city": "TestCityName",
     }
     defaults.update(params)
     return Airport.objects.create(**defaults)
@@ -62,8 +79,10 @@ def sample_airport(**params):
 def sample_route(**params):
     defaults = {
         "source": sample_airport(name="Airport1", code="BBB", closest_big_city="City1"),
-        "destination": sample_airport(name="Airport2", code="CCC", closest_big_city="City2"),
-        "distance": 100.0
+        "destination": sample_airport(
+            name="Airport2", code="CCC", closest_big_city="City2"
+        ),
+        "distance": 100.0,
     }
     defaults.update(params)
     return Route.objects.create(**defaults)
@@ -74,7 +93,7 @@ def sample_airplane_type(**params):
         "brand": "TestBrand",
         "model": "TestModel",
         "default_row": 10,
-        "default_seats_in_row": 6
+        "default_seats_in_row": 6,
     }
     defaults.update(params)
     return AirplaneType.objects.create(**defaults)
@@ -102,19 +121,17 @@ def sample_flight(**params):
         "route": sample_route(),
         "airplane": sample_airplane(),
         "departure_time": datetime.now(),
-        "arrival_time": datetime.now() + timedelta(hours=5)
+        "arrival_time": datetime.now() + timedelta(hours=5),
     }
     defaults.update(params)
     return Flight.objects.create(**defaults)
 
 
 def sample_order(**params):
-    user = get_user_model().objects.create_user(username="testusername", email="test1@example.com", password="testpass1")
-    defaults = {
-        "created_at": datetime.now(),
-        "user": user,
-        "order_number": "ABC12345"
-    }
+    user = get_user_model().objects.create_user(
+        username="testusername", email="test1@example.com", password="testpass1"
+    )
+    defaults = {"created_at": datetime.now(), "user": user, "order_number": "ABC12345"}
     defaults.update(params)
     return Order.objects.create(**defaults)
 
@@ -131,11 +148,15 @@ def sample_ticket(**params):
 
 
 def airport_create(name, code, closest_big_city):
-    return Airport.objects.create(name=name, code=code, closest_big_city=closest_big_city)
+    return Airport.objects.create(
+        name=name, code=code, closest_big_city=closest_big_city
+    )
 
 
 def route_create(source, destination, distance):
-    return Route.objects.create(source=source, destination=destination, distance=distance)
+    return Route.objects.create(
+        source=source, destination=destination, distance=distance
+    )
 
 
 def detail_crew_position_url(crew_position):
@@ -236,7 +257,7 @@ class AuthenticatedAirportTests(TestCase):
         playload = {
             "first_name": "Joe",
             "last_name": "Doe",
-            "position": sample_crew_position()
+            "position": sample_crew_position(),
         }
         res = self.client.post(CREW_URL, playload)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
@@ -252,16 +273,11 @@ class AuthenticatedAirportTests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_airport_create_forbidden(self):
-        playload = {
-            "name": "Singapore",
-            "code": "AAA",
-            "closest_big_city": "Singapore"
-        }
+        playload = {"name": "Singapore", "code": "AAA", "closest_big_city": "Singapore"}
         res = self.client.post(AIRPORT_URL, playload)
         self.assertEqual(res.status_code, status.HTTP_403_FORBIDDEN)
 
     def test_route_list(self):
-
         route = sample_route()
 
         res = self.client.get(ROUTE_URL)
@@ -273,9 +289,13 @@ class AuthenticatedAirportTests(TestCase):
 
     def test_route_create_forbidden(self):
         playload = {
-            "source": sample_airport(name="Airport1", code="BBB", closest_big_city="City1"),
-            "destination": sample_airport(name="Airport2", code="CCC", closest_big_city="City2"),
-            "distance": 200.0
+            "source": sample_airport(
+                name="Airport1", code="BBB", closest_big_city="City1"
+            ),
+            "destination": sample_airport(
+                name="Airport2", code="CCC", closest_big_city="City2"
+            ),
+            "distance": 200.0,
         }
 
         res = self.client.post(ROUTE_URL, playload)
@@ -349,7 +369,7 @@ class AuthenticatedAirportTests(TestCase):
             brand="TestBrand2",
             model="TestModel2",
             default_row=10,
-            default_seats_in_row=6
+            default_seats_in_row=6,
         )
 
         serializer1 = AirplaneTypeSerializer(airplane_type1)
@@ -394,13 +414,12 @@ class AuthenticatedAirportTests(TestCase):
         self.assertEqual(res.data, serializer.data)
 
     def test_airplane_create_forbidden(self):
-
         playload = {
             "name": "TestName",
             "row": 6,
             "seats_in_row": 6,
             "airplane_type": sample_airplane_type(),
-            "crew": []
+            "crew": [],
         }
         res = self.client.post(AIRPLANE_URL, playload)
 
@@ -438,7 +457,7 @@ class AuthenticatedAirportTests(TestCase):
             "route": sample_route().id,
             "airplane": sample_airplane().id,
             "departure_time": datetime.now(),
-            "arrival_time": datetime.now() + timedelta(hours=5)
+            "arrival_time": datetime.now() + timedelta(hours=5),
         }
 
         res = self.client.post(FLIGHT_URL, playload)
@@ -452,7 +471,9 @@ class AuthenticatedAirportTests(TestCase):
 
     def test_flight_property_with_booked_tickets(self):
         flight = sample_flight()
-        ticket = Ticket.objects.create(row=1, seat=1, flight=flight, order=sample_order())
+        ticket = Ticket.objects.create(
+            row=1, seat=1, flight=flight, order=sample_order()
+        )
 
         booked_tickets_count = Ticket.objects.filter(flight=flight).count()
         expected_available_tickets = flight.airplane.capacity - booked_tickets_count
@@ -463,10 +484,7 @@ class AuthenticatedIsAdminAirportTests(TestCase):
     def setUp(self) -> None:
         self.client = APIClient()
         self.user = get_user_model().objects.create_user(
-            email="test@test.com",
-            password="testpass",
-            is_staff=True
-
+            email="test@test.com", password="testpass", is_staff=True
         )
         self.client.force_authenticate(self.user)
 
@@ -499,7 +517,6 @@ class AuthenticatedIsAdminAirportTests(TestCase):
         self.assertEqual(res.status_code, status.HTTP_204_NO_CONTENT)
 
     def test_airport_create(self):
-
         airport = {"name": "TestAirport", "code": "AAA", "closest_big_city": "TestCity"}
 
         res = self.client.post(AIRPORT_URL, airport)
@@ -517,11 +534,7 @@ class AuthenticatedIsAdminAirportTests(TestCase):
         airport1 = airport_create("Airport1", "BBB", "City1")
         airport2 = airport_create("Airport2", "CCC", "City2")
 
-        route = {
-            "source": airport1.id,
-            "destination": airport2.id,
-            "distance": 200.0
-        }
+        route = {"source": airport1.id, "destination": airport2.id, "distance": 200.0}
 
         res = self.client.post(ROUTE_URL, route)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
@@ -554,7 +567,7 @@ class AuthenticatedIsAdminAirportTests(TestCase):
             "brand": "TestBrand",
             "model": "TestModel",
             "default_row": 10,
-            "default_seats_in_row": 6
+            "default_seats_in_row": 6,
         }
 
         res = self.client.post(AIRPLANE_TYPE_URL, playload)
@@ -566,7 +579,7 @@ class AuthenticatedIsAdminAirportTests(TestCase):
             "brand": "TestBrand",
             "model": "TestModel",
             "default_row": 10,
-            "default_seats_in_row": 6
+            "default_seats_in_row": 6,
         }
         url = detail_airplane_type_url(airplane_type)
         res = self.client.put(url, playload)
@@ -579,14 +592,13 @@ class AuthenticatedIsAdminAirportTests(TestCase):
         crew1 = sample_crew(
             first_name="TestName1",
             last_name="TestLastName1",
-            position=sample_crew_position(position="NewTestPosition")
+            position=sample_crew_position(position="NewTestPosition"),
         )
-
 
         playload = {
             "name": "TestName",
             "airplane_type": airplane_type.id,
-            "crew": [crew1.id]
+            "crew": [crew1.id],
         }
 
         serializer = AirplaneSerializer(data=playload)
@@ -604,9 +616,8 @@ class AuthenticatedIsAdminAirportTests(TestCase):
             "route": sample_route().id,
             "airplane": sample_airplane().id,
             "departure_time": datetime.now(),
-            "arrival_time": datetime.now() + timedelta(hours=5)
+            "arrival_time": datetime.now() + timedelta(hours=5),
         }
 
         res = self.client.post(FLIGHT_URL, playload)
         self.assertEqual(res.status_code, status.HTTP_201_CREATED)
-

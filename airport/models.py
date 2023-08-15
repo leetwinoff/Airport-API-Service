@@ -34,12 +34,18 @@ class Airport(models.Model):
 
 
 class Route(models.Model):
-    source = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="source_routes")
-    destination = models.ForeignKey(Airport, on_delete=models.CASCADE, related_name="destination_routes")
+    source = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="source_routes"
+    )
+    destination = models.ForeignKey(
+        Airport, on_delete=models.CASCADE, related_name="destination_routes"
+    )
     distance = models.FloatField()
 
     def __str__(self):
-        return f"From {self.source} to {self.destination}. Distance: {self.distance} mi."
+        return (
+            f"From {self.source} to {self.destination}. Distance: {self.distance} mi."
+        )
 
 
 class AirplaneType(models.Model):
@@ -56,13 +62,14 @@ class Airplane(models.Model):
     name = models.CharField(max_length=255)
     row = models.IntegerField()
     seats_in_row = models.IntegerField()
-    airplane_type = models.ForeignKey(AirplaneType, on_delete=models.CASCADE, related_name="airplanes")
+    airplane_type = models.ForeignKey(
+        AirplaneType, on_delete=models.CASCADE, related_name="airplanes"
+    )
     crew = models.ManyToManyField(Crew, related_name="airplanes", blank=True)
 
     @property
     def capacity(self):
         return self.row * self.seats_in_row
-
 
     def __str__(self):
         return self.name
@@ -79,12 +86,17 @@ class Flight(models.Model):
         booked_tickets_count = self.tickets.count()
         return self.airplane.capacity - booked_tickets_count
 
-
     def __str__(self):
-        departure_time_formatted = timezone.localtime(self.departure_time).strftime('%d-%m-%Y at %H:%M')
-        arrival_time_formatted = timezone.localtime(self.arrival_time).strftime('%d-%m-%Y at %H:%M')
-        return f"Departure from {self.route.source} on {departure_time_formatted}" \
-               f" - Arrival to {self.route.destination} on {arrival_time_formatted}"
+        departure_time_formatted = timezone.localtime(self.departure_time).strftime(
+            "%d-%m-%Y at %H:%M"
+        )
+        arrival_time_formatted = timezone.localtime(self.arrival_time).strftime(
+            "%d-%m-%Y at %H:%M"
+        )
+        return (
+            f"Departure from {self.route.source} on {departure_time_formatted}"
+            f" - Arrival to {self.route.destination} on {arrival_time_formatted}"
+        )
 
 
 class Order(models.Model):
@@ -95,7 +107,6 @@ class Order(models.Model):
     class Meta:
         ordering = ["-created_at"]
         db_table = "order"
-
 
     def generate_order_number(self):
         """Generates random order number from 3 letters upper case and 5 digits"""
@@ -126,9 +137,7 @@ class Ticket(models.Model):
         airplane = flight.airplane
         if not (1 <= row <= airplane.row):
             raise error_to_raise(
-                {
-                    "row": f"Row number must be in available range (1, {airplane.row}))"
-                }
+                {"row": f"Row number must be in available range (1, {airplane.row}))"}
             )
         if not (1 <= seat <= airplane.seats_in_row):
             raise error_to_raise(
@@ -157,11 +166,9 @@ class Ticket(models.Model):
             force_insert, force_update, using, update_fields
         )
 
-
     def __str__(self):
         return f"Ticket row: {self.row} seat: {self.seat} order No. {self.order.order_number}"
 
     class Meta:
         unique_together = ("flight", "row", "seat")
         ordering = ["row", "seat"]
-
