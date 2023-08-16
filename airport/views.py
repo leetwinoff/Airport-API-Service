@@ -72,7 +72,9 @@ class AirportViewSet(viewsets.ModelViewSet):
         if code:
             queryset = queryset.filter(code__icontains=code)
         if closest_big_city:
-            queryset = queryset.filter(closest_big_city__icontains=closest_big_city)
+            queryset = queryset.filter(
+                closest_big_city__icontains=closest_big_city
+            )
 
         return queryset
 
@@ -116,7 +118,9 @@ class RouteViewSet(viewsets.ModelViewSet):
         if source:
             queryset = queryset.filter(source__name__icontains=source)
         if destination:
-            queryset = queryset.filter(destination__name__icontains=destination)
+            queryset = queryset.filter(
+                destination__name__icontains=destination
+            )
         if distance:
             try:
                 distance = float(distance)
@@ -211,7 +215,8 @@ class FlightViewSet(viewsets.ModelViewSet):
             start_date = datetime.strptime(departure_time, "%Y-%m-%d").date()
             end_date = start_date + timedelta(days=1)
             queryset = queryset.filter(
-                departure_time__date__gte=start_date, departure_time__date__lt=end_date
+                departure_time__date__gte=start_date,
+                departure_time__date__lt=end_date
             )
 
         if arrival_time:
@@ -225,17 +230,20 @@ class FlightViewSet(viewsets.ModelViewSet):
             OpenApiParameter(
                 "departure_time",
                 type=OpenApiTypes.DATE,
-                description="Filter by departure date (ex. ?departure_time=2023-08-01)",
+                description=f"Filter by departure date "
+                            f"(ex. ?departure_time=2023-08-01)",
             ),
             OpenApiParameter(
                 "arrival_time",
                 type=OpenApiTypes.DATE,
-                description="Filter by arrival date (ex. ?arrival_time=2023-08-02)",
+                description=f"Filter by arrival date"
+                            f" (ex. ?arrival_time=2023-08-02)",
             ),
             OpenApiParameter(
                 "available_tickets",
                 type=OpenApiTypes.INT,
-                description="Filter by available tickets is greater or equal (ex. ?available_tickets=10)",
+                description=f"Filter by available tickets "
+                            f"is greater or equal (ex. ?available_tickets=10)",
             ),
         ]
     )
