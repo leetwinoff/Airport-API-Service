@@ -52,3 +52,42 @@ docker compose up
 docker exec -it <container_name> bash
 ```
 
+
+#### Token Obtain Page
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Token%20Obtain%201.png)
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Token%20Obtain%202.png)
+
+### Api Root
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Api%20Root.png)
+
+#### Crew Position Create
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Crew%20Position.png)
+
+#### Crew Create
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Crew.png)
+
+#### Airport Create
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Airport.png)
+
+#### Airplane Type Create
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Airplane%20Type.png)
+
+#### Airplane Create
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Airplane.png)
+
+#### Route Create
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Rote.png)
+
+#### Create Flight
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Flight.png)
+
+#### Create Ticket
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Ticket.png)
+
+#### Create Order
+![Alt Text](https://github.com/leetwinoff/Airport-API-Service/blob/develop/images/Create%20Order.png)
+
+
+
+
+
